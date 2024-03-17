@@ -11,6 +11,18 @@ export default function PlacesPage(){
             setPlaces(data);
         });
     },[]);
+
+    const deletePlace = (placeId) => {
+        axios.delete(`/places/${placeId}`)
+          .then(() => {
+            // Update the places list after successful deletion
+            setPlaces(places.filter(place => place._id !== placeId));
+          })
+          .catch(error => {
+            console.error("Error deleting place:", error);
+          });
+      };
+      
    return (
     <div>
         <AccountNav />  
@@ -33,6 +45,9 @@ export default function PlacesPage(){
                     <p className="text-sm mt-2">
                         {place.description}
                     </p>
+                    <Link to={'/account/places'} className="flex cursor-pointer gap-4 bg-gray-100 p-4 rounded-2xl">
+                    <button onClick={() => deletePlace(place._id)}>Delete</button>
+                    </Link>
                     </div>
                 </Link>
             ))}

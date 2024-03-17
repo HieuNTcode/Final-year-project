@@ -81,17 +81,23 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/profile', (req,res) => {
-    const {token} = req.cookies;
-    if (token){
-        jwt.verify(token, jwtSecret, {}, async (err, userData) => {
-            if(err) throw err;
-            const {name,email,_id} = await User.findById(userData.id)
-            res.json({name,email,_id});
-        })
-    } else {
-        res.json(null);
-    }
-   
+  const {token} = req.cookies;
+  if (token){
+      jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+          if(err) throw err;
+          const user = await User.findById(userData.id);
+          if (user) {
+              const {name,email,_id,imageProfile,description,
+                age,language,lived} = user;
+              res.json({name,email,_id,imageProfile,description,
+                age,language,lived});
+          } else {
+              res.status(404).json({ error: 'User not found' });
+          }
+      })
+  } else {
+      res.json(null);
+  }
 })
 
 app.post('/logout', (req,res) => {
@@ -140,6 +146,11 @@ app.post('/places', (req,res) => {
   });
 });
 
+app.get('/users', async (req, res) => {
+  const users = await User.find();
+  res.json(users);
+});
+
 app.get('/user-places', async (req,res) => {
   const {token} = req.cookies;
   jwt.verify(token, jwtSecret, {}, async (err, userData) => {
@@ -152,6 +163,28 @@ app.get('/places/:id', async (req,res) => {
   const {id} = req.params;
   res.json(await Place.findById(id));
 });
+
+app.get('/users/:id', async (req, res) => {
+  const userId = req.params.id;
+  try {
+    const user = await User.findById(userId);
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve user' });
+  }
+});
+
+
+app.get('/places/:id', async (req, res) => {
+  const placeId = req.params.id;
+  try {
+    const place = await Place.findById(placeId);
+    res.json(place);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve place' });
+  }
+});
+
 
 app.put('/places', async (req,res) =>{
   const {token} = req.cookies;
@@ -178,6 +211,7 @@ app.get('/places', async (req, res) => {
   res.json(places);
 });
 
+
 app.post('/bookings', async (req,res) => {
   const userData = await getUserDataFromToken(req);
   const {place,checkIn,checkOut,numberOfGuests,name,phone,price} = req.body;
@@ -195,6 +229,98 @@ app.post('/bookings', async (req,res) => {
 app.get('/bookings', async (req,res) => {
   const userData = await getUserDataFromToken(req);
   res.json( await Booking.find({user:userData.id}).populate('place') );
+});
+
+
+app.get('/edit-user/:id', async (req,res) => {
+  const {id} = req.params;
+  res.json(await User.findById(id));
+});
+
+app.put('/edit-user', async (req,res) =>{
+  const {token} = req.cookies;
+  const {id,
+    name,email,addedPhotos,description,
+    age,language,lived,
+  } = req.body; 
+  jwt.verify(token, jwtSecret, {}, async (err, userData) => { 
+    if (err) throw err;
+    const userDoc = await User.findById(id);
+     if (userData.id){
+      userDoc.set({   
+        name,email,imageProfile:addedPhotos,description,
+        age,language,lived,
+      });
+      userDoc.save();
+      res.json('ok');
+     }
+  });
+});
+
+app.get('/edit-user', async (req, res) => {
+  const user = await User.find();
+  res.json(user);
+});
+
+app.delete('/places/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Delete the place using the provided ID
+    await Place.findByIdAndDelete(id);
+    res.sendStatus(204); // Send a success status code (204 - No Content)
+  } catch (error) {
+    console.error("Error deleting place:", error);
+    res.status(500).json({ error: "Failed to delete place" });
+  }
+});
+
+app.delete('/users/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Find the user using the provided ID
+    const user = await User.findById(id);
+
+    // Delete the user's places
+    await Place.deleteMany({ owner: user._id });
+
+    // Delete the user
+    await User.findByIdAndDelete(id);
+
+    res.sendStatus(204); // Send a success status code (204 - No Content)
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "Failed to delete user" });
+  }
+});
+
+app.get('/users/:id', async (req, res) => {
+  const userId = req.params.id;
+  const requestingUser = await User.findById(userId);
+
+  if (requestingUser.role === 'admin') {
+    try {
+      const user = await User.findById(userId);
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to retrieve user' });
+    }
+  } else {
+    res.status(403).json({ error: 'Access denied' });
+  }
+});
+
+app.get('/user/role', async (req, res) => {
+  const { token } = req.cookies;
+  jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    if (err) {
+      res.status(401).json({ error: 'Invalid token' });
+    } else {
+      const { id } = userData || {}; // Set a default empty object if userData is null or undefined
+      const user = id ? await User.findById(id) : null; // Only query the user if id is truthy
+      const role = user ? user.role : null; // Retrieve the role if user is not null
+      res.json({ role });
+    }
+  });
 });
 
 app.listen(4000);
