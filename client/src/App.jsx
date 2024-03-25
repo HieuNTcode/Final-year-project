@@ -16,6 +16,8 @@ import BookingPage from "./pages/BookingPage";
 import EditProfile from './pages/EditProfile'
 import AdminPage from './pages/AdminPage'
 import SearchPage from './pages/SearchPage'
+import WhoBookingPage from './pages/WhoBookingPage'
+import BookingBy from './pages/BookingBy'
 
 
 
@@ -41,6 +43,8 @@ function App() {
       <Route path="/account/edit-user/:id"  element={<EditProfile />} />
       <Route path="/account/admin"  element={<AdminPage />} />
       <Route path="/places/search"  element={<SearchPage />} />
+      <Route path="/account/bookingBy" element={<WhoBookingPage />} />
+      <Route path="/account/bookingBy/:id" element={<BookingBy />} />
       </Route>
     </Routes>
     </UserContextProvider>

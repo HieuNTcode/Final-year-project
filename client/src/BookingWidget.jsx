@@ -3,15 +3,23 @@ import {differenceInCalendarDays} from "date-fns";
 import axios from "axios";
 import {Navigate} from "react-router-dom";
 import {UserContext} from "./UserContext.jsx";
+import visaLogo from "./assets/logo/VISA.png";
 
 export default function BookingWidget({place}) {
-  const [checkIn,setCheckIn] = useState('');
-  const [checkOut,setCheckOut] = useState('');
-  const [numberOfGuests,setNumberOfGuests] = useState(1);
-  const [name,setName] = useState('');
-  const [phone,setPhone] = useState('');
-  const [redirect,setRedirect] = useState('');
-  const {user} = useContext(UserContext);
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [numberOfGuests, setNumberOfGuests] = useState(1);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [redirect, setRedirect] = useState("");
+  const [paymentname, setPaymentName] = useState("");
+  const [creditNumber, setCreditCardNumber] = useState("");
+  const { user } = useContext(UserContext);
+
+  const paymentOptions = [
+    {paymentname: "VISA", logo: visaLogo },
+    {paymentname: "PAYPAL",  }
+  ];
 
   useEffect(() => {
     if (user) {
@@ -24,15 +32,30 @@ export default function BookingWidget({place}) {
     numberOfNights = differenceInCalendarDays(new Date(checkOut), new Date(checkIn));
   }
 
+  // Format credit card number as "XXXX-XXXX-XXXX"
+  const formatCreditCardNumber = (inputNumber) => {
+    const creditCardDigits = inputNumber.replace(/\D/g, "");
+    const formattedNumber = creditCardDigits
+      .replace(/(\d{4})(?=\d)/g, "$1-")
+      .slice(0, 19);
+    return formattedNumber;
+  };
+
+  
   async function bookThisPlace() {
     const response = await axios.post('/bookings', {
       checkIn,checkOut,numberOfGuests,name,phone,
       place:place._id,
       price:numberOfNights * place.price,
+      paymentname,
+      creditNumber,
     });
     const bookingId = response.data._id;
+    
     setRedirect(`/account/bookings/${bookingId}`);
   }
+
+  
 
   if (redirect) {
     return <Navigate to={redirect} />
@@ -47,33 +70,75 @@ export default function BookingWidget({place}) {
         <div className="flex">
           <div className="py-3 px-4">
             <label>Check in:</label>
-            <input type="date"
-                   value={checkIn}
-                   onChange={ev => setCheckIn(ev.target.value)}/>
+            <input
+              type="date"
+              value={checkIn}
+              onChange={(ev) => setCheckIn(ev.target.value)}
+            />
           </div>
           <div className="py-3 px-4 border-l">
             <label>Check out:</label>
-            <input type="date" value={checkOut}
-                   onChange={ev => setCheckOut(ev.target.value)}/>
+            <input
+              type="date"
+              value={checkOut}
+              onChange={(ev) => setCheckOut(ev.target.value)}
+            />
           </div>
         </div>
         <div className="py-3 px-4 border-t">
           <label>Number of guests:</label>
-          <input type="number"
-                 value={numberOfGuests}
-                 onChange={ev => setNumberOfGuests(ev.target.value)}/>
+          <input
+            type="number"
+            value={numberOfGuests}
+            onChange={(ev) => setNumberOfGuests(ev.target.value)}
+          />
         </div>
         {numberOfNights > 0 && (
           <div className="py-3 px-4 border-t">
             <label>Your full name:</label>
-            <input type="text"
-                   value={name}
-                   onChange={ev => setName(ev.target.value)}/>
+            <input
+              type="text"
+              value={name}
+              onChange={(ev) => setName(ev.target.value)}
+            />
             <label>Phone number:</label>
-            <input type="tel"
-                   value={phone}
-                   onChange={ev => setPhone(ev.target.value)}/>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(ev) => setPhone(ev.target.value)}
+            />
           </div>
+        )}
+        {numberOfNights > 0 && (
+          <div className="py-3 px-4 border-t">
+          <label>Payment method:</label>
+          <select
+            value={paymentname}
+            onChange={(ev) => setPaymentName(ev.target.value)}
+          >
+            <option value="">Select a payment method</option>
+            {paymentOptions.map((option) => (
+              <option key={option.paymentname} value={option.paymentname}>
+                {option.paymentname}
+              </option>
+            ))}
+          </select>
+          {paymentname && (
+            <img
+              src={paymentOptions.find((option) => option.paymentname === paymentname).logo}
+              alt={paymentname}
+              className="mt-2"
+            />
+          )}
+          <div>
+          <label>Credit card number:</label>
+            <input
+              type="text"
+              value={formatCreditCardNumber(creditNumber)}
+              onChange={(ev) => setCreditCardNumber(ev.target.value)}
+            />
+          </div>
+        </div>
         )}
       </div>
       <button onClick={bookThisPlace} className="primary mt-4">

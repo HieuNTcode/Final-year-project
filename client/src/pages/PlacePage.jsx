@@ -4,12 +4,12 @@ import axios from "axios";
 import BookingWidget from "../BookingWidget";
 import PlaceGallery from "../PlaceGallery";
 import AddressLink from "../AddressLink";
+import ReviewWidget from "../ReviewWidget";
 
 export default function PlacePage() {
   const { id} = useParams();
   const [place, setPlace] = useState(null);
   const [ownerName, setOwnerName] = useState("");
-  const [ownerAge, setOwnerAge] = useState("");
 
   useEffect(() => {
     if (!id) {
@@ -24,7 +24,6 @@ export default function PlacePage() {
   const fetchOwnerName = (ownerId) => {
     axios.get(`/users/${ownerId}`).then((response) => {
       setOwnerName(response.data.name);
-      setOwnerAge(response.data.age);
     });
   };
 
@@ -50,7 +49,6 @@ export default function PlacePage() {
           
           <h2 className="font-semibold text-2xl">Owner:</h2>
               {ownerName}
-              {ownerAge}
         </div>
           </div>
           <h2 className="font-semibold text-2xl">Check in & out:</h2>
@@ -72,6 +70,7 @@ export default function PlacePage() {
         <div className="mb-4 mt-2 text-sm text-gray-700 leading-5">
           {place.extraInfo}
         </div>
+        <ReviewWidget place={place}/>
       </div>
     </div>
   );

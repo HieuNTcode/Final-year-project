@@ -12,6 +12,7 @@ const app = express();
 const multer = require('multer');
 const fs = require('fs');
 const Booking = require('./models/Booking.js');
+const Review = require('./models/Review.js');
 const { resolve } = require('path');
 const { rejects } = require('assert');
 
@@ -214,11 +215,11 @@ app.get('/places', async (req, res) => {
 
 app.post('/bookings', async (req,res) => {
   const userData = await getUserDataFromToken(req);
-  const {place,checkIn,checkOut,numberOfGuests,name,phone,price} = req.body;
+  const {place,checkIn,checkOut,numberOfGuests,name,phone,price,paymentname,creditNumber} = req.body;
   Booking.create({
-    place,checkIn,checkOut,numberOfGuests,name,phone,price,user:userData.id,
-  }).then(() => {
-    res,json(doc);
+    place,checkIn,checkOut,numberOfGuests,name,phone,price,user:userData.id,paymentname,creditNumber
+  }).then((doc) => {
+    res.json(doc);
   }).catch((err) => {
     throw err;
   });
@@ -230,7 +231,6 @@ app.get('/bookings', async (req,res) => {
   const userData = await getUserDataFromToken(req);
   res.json( await Booking.find({user:userData.id}).populate('place') );
 });
-
 
 app.get('/edit-user/:id', async (req,res) => {
   const {id} = req.params;
@@ -321,6 +321,84 @@ app.get('/user/role', async (req, res) => {
       res.json({ role });
     }
   });
+});
+
+app.post('/reviews', async (req,res) => {
+  const userData = await getUserDataFromToken(req);
+  const {comment,rating,place} = req.body;
+  Review.create({
+    comment,rating,user:userData.id,place
+  }).then((doc) => {
+    res.json(doc);
+  }).catch((err) => {
+    throw err;
+  });
+});
+
+
+app.get('/reviews/place/:id', async (req, res) => {
+  const placeId = req.params.id;
+  try {
+    const reviews = await Review.find({ place: placeId });
+    res.json(reviews);
+  } catch (e) {
+    res.status(404).json({ error: 'Reviews not found' });
+  }
+});
+
+app.get('/bookings/count', async (req, res) => {
+  try {
+    const { userId } = req.query;
+
+    // Perform the necessary logic to count the bookings for the user
+    const bookingCount = await Booking.countDocuments({ user: userId });
+
+    // Return the count as a response
+    res.json({ count: bookingCount });
+  } catch (error) {
+    // Handle any errors that may occur
+    console.error('Error counting bookings:', error);
+    res.status(500).json({ error: 'An error occurred while counting bookings' });
+  }
+});
+
+app.get('/reviews/count', async (req, res) => {
+  try {
+    const { userId } = req.query;
+
+    // Perform the necessary logic to count the bookings for the user
+    const reviewCount = await Review.countDocuments({ user: userId });
+
+    // Return the count as a response
+    res.json({ count: reviewCount });
+  } catch (error) {
+    // Handle any errors that may occur
+    console.error('Error counting bookings:', error);
+    res.status(500).json({ error: 'An error occurred while counting bookings' });
+  }
+});
+
+
+
+
+app.get('/bookingBy', async (req, res) => {
+  try {
+    const bookings = await Booking.find().populate('user').populate('place');
+    res.json(bookings);
+  } catch (error) {
+    console.error('Error fetching bookings:', error);
+    res.status(500).json({ error: 'Failed to fetch bookings' });
+  }
+});
+
+app.get('/bookingBy/:id', async (req, res) => {
+  const bookId = req.params.id;
+  try {
+    const booking = await Booking.findById(bookId).populate('place');
+    res.json(booking);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve book' });
+  }
 });
 
 app.listen(4000);

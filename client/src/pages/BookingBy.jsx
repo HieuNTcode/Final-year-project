@@ -5,16 +5,13 @@ import AddressLink from "../AddressLink";
 import PlaceGallery from "../PlaceGallery";
 import BookingDates from "../BookingDates";
 
-export default function BookingPage() {
+export default function BookingBy() {
   const {id} = useParams();
   const [booking,setBooking] = useState(null);
   useEffect(() => {
     if (id) {
-      axios.get('/bookings').then(response => {
-        const foundBooking = response.data.find(({_id}) => _id === id);
-        if (foundBooking) {
-          setBooking(foundBooking);
-        }
+      axios.get(`/BookingBy/${id}`).then(response => {
+        setBooking(response.data);
       });
     }
   }, [id]);

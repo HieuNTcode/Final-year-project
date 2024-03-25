@@ -8,6 +8,8 @@ const bookingSchema = new mongoose.Schema({
   name: {type:String, required:true},
   phone: {type:String, required:true},
   price: Number,
+  paymentname: {type:String, required:true},
+  creditNumber: {type:String, required:true},
 });
 
 const BookingModel = mongoose.model('Booking', bookingSchema);
