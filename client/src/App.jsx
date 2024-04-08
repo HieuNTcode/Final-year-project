@@ -18,6 +18,7 @@ import AdminPage from './pages/AdminPage'
 import SearchPage from './pages/SearchPage'
 import WhoBookingPage from './pages/WhoBookingPage'
 import BookingBy from './pages/BookingBy'
+import OwnerProfile from './pages/OwnerProfile';
 
 
 
@@ -45,6 +46,7 @@ function App() {
       <Route path="/places/search"  element={<SearchPage />} />
       <Route path="/account/bookingBy" element={<WhoBookingPage />} />
       <Route path="/account/bookingBy/:id" element={<BookingBy />} />
+      <Route path="/owner/:ownerId" element={<OwnerProfile />} />
       </Route>
     </Routes>
     </UserContextProvider>

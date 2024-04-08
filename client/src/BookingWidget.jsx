@@ -1,11 +1,11 @@
-import {useContext, useEffect, useState} from "react";
-import {differenceInCalendarDays} from "date-fns";
+import { useContext, useEffect, useState } from "react";
+import { differenceInCalendarDays } from "date-fns";
 import axios from "axios";
-import {Navigate} from "react-router-dom";
-import {UserContext} from "./UserContext.jsx";
+import { Navigate, Link } from "react-router-dom";
+import { UserContext } from "./UserContext.jsx";
 import visaLogo from "./assets/logo/VISA.png";
 
-export default function BookingWidget({place}) {
+export default function BookingWidget({ place }) {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [numberOfGuests, setNumberOfGuests] = useState(1);
@@ -17,8 +17,8 @@ export default function BookingWidget({place}) {
   const { user } = useContext(UserContext);
 
   const paymentOptions = [
-    {paymentname: "VISA", logo: visaLogo },
-    {paymentname: "PAYPAL",  }
+    { paymentname: "VISA", logo: visaLogo },
+    { paymentname: "PAYPAL" },
   ];
 
   useEffect(() => {
@@ -41,24 +41,30 @@ export default function BookingWidget({place}) {
     return formattedNumber;
   };
 
-  
   async function bookThisPlace() {
-    const response = await axios.post('/bookings', {
-      checkIn,checkOut,numberOfGuests,name,phone,
-      place:place._id,
-      price:numberOfNights * place.price,
+    if (!user) {
+      setRedirect("/login");
+      return;
+    }
+
+    const response = await axios.post("/bookings", {
+      checkIn,
+      checkOut,
+      numberOfGuests,
+      name,
+      phone,
+      place: place._id,
+      price: numberOfNights * place.price,
       paymentname,
       creditNumber,
     });
     const bookingId = response.data._id;
-    
+
     setRedirect(`/account/bookings/${bookingId}`);
   }
 
-  
-
   if (redirect) {
-    return <Navigate to={redirect} />
+    return <Navigate to={redirect} />;
   }
 
   return (
@@ -111,42 +117,49 @@ export default function BookingWidget({place}) {
         )}
         {numberOfNights > 0 && (
           <div className="py-3 px-4 border-t">
-          <label>Payment method:</label>
-          <select
-            value={paymentname}
-            onChange={(ev) => setPaymentName(ev.target.value)}
-          >
-            <option value="">Select a payment method</option>
-            {paymentOptions.map((option) => (
-              <option key={option.paymentname} value={option.paymentname}>
-                {option.paymentname}
-              </option>
-            ))}
-          </select>
-          {paymentname && (
-            <img
-              src={paymentOptions.find((option) => option.paymentname === paymentname).logo}
-              alt={paymentname}
-              className="mt-2"
-            />
-          )}
-          <div>
-          <label>Credit card number:</label>
-            <input
-              type="text"
-              value={formatCreditCardNumber(creditNumber)}
-              onChange={(ev) => setCreditCardNumber(ev.target.value)}
-            />
+            <label>Payment method:</label>
+            <select
+              value={paymentname}
+              onChange={(ev) => setPaymentName(ev.target.value)}
+            >
+              <option value="">Select a payment method</option>
+              {paymentOptions.map((option) => (
+                <option key={option.paymentname} value={option.paymentname}>
+                  {option.paymentname}
+                </option>
+              ))}
+            </select>
+            {paymentname && (
+              <img
+                src={paymentOptions.find((option) => option.paymentname === paymentname).logo}
+                alt={paymentname}
+                className="mt-2"
+              />
+            )}
+            <div>
+              <label>Credit card number:</label>
+              <input
+                type="text"
+                value={formatCreditCardNumber(creditNumber)}
+                onChange={(ev) => setCreditCardNumber(ev.target.value)}
+              />
+            </div>
           </div>
-        </div>
         )}
       </div>
-      <button onClick={bookThisPlace} className="primary mt-4">
-        Book this place
-        {numberOfNights > 0 && (
-          <span> ${numberOfNights * place.price}</span>
-        )}
-      </button>
+      {!user && (
+        <div className="text-center mt-4">
+          <p>Please <Link to="/login">login</Link> to book this place.</p>
+        </div>
+      )}
+      {user && (
+        <button onClick={bookThisPlace} className="primary mt-4">
+          Book this place
+          {numberOfNights > 0 && (
+            <span> ${numberOfNights * place.price}</span>
+          )}
+        </button>
+      )}
     </div>
   );
 }

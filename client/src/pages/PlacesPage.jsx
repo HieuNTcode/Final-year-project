@@ -34,9 +34,13 @@ export default function PlacesPage(){
             add new places
            </Link>
         </div>
-        <div className="mt-4">
+        <div className="mt-4" style={{
+      marginLeft: "217px",
+      marginRight: "217px",  
+    }}>
+
             {places.length > 0 && places.map(place => (
-                <Link to={'/account/places/'+place._id} className="flex cursor-pointer gap-4 bg-gray-100 p-4 rounded-2xl">
+                <Link to={'/account/places/'+place._id} className="flex cursor-pointer mt-7 gap-4 bg-gray-100 p-4 rounded-2xl" >
                     <div className="flex w-32 h-32 bg-gray-300 grow shrink-0">
                        <PlaceImg place={place} />
                     </div >
@@ -46,7 +50,11 @@ export default function PlacesPage(){
                         {place.description}
                     </p>
                     <Link to={'/account/places'} className="flex cursor-pointer gap-4 bg-gray-100 p-4 rounded-2xl">
-                    <button onClick={() => deletePlace(place._id)}>Delete</button>
+                            <button onClick={() => deletePlace(place._id)} class="relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
+                                <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+                                    Delete
+                                </span>
+                            </button>
                     </Link>
                     </div>
                 </Link>

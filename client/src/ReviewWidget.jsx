@@ -7,12 +7,11 @@ import ReviewImg from "./ReviewImg.jsx";
 
 export default function ReviewWidget({ place }) {
   const [comment, setComment] = useState("");
-  const [rating, setRating] = useState("");
+  const [rating, setRating] = useState(0); // Updated initial value to 0
   const [redirect, setRedirect] = useState("");
   const { user } = useContext(UserContext);
   const [name, setName] = useState("");
   const [reviews, setReviews] = useState([]);
-  
 
   useEffect(() => {
     if (user) {
@@ -63,12 +62,18 @@ export default function ReviewWidget({ place }) {
           </div>
           <div className="py-3 px-4 border-l w-1/2">
             <label className="text-lg">Rating:</label>
-            <input
-              type="number"
+            <select
               value={rating}
-              onChange={(ev) => setRating(ev.target.value)}
+              onChange={(ev) => setRating(Number(ev.target.value))}
               className="border border-gray-300 rounded-lg px-3 py-2 mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
+            >
+              <option value={0}>Select a rating</option>
+              <option value={1}>1. Poor place</option>
+              <option value={2}>2. Bad</option>
+              <option value={3}>3. Decent</option>
+              <option value={4}>4. Good</option>
+              <option value={5}>5. Excellent</option>
+            </select>
           </div>
         </div>
       </div>
@@ -83,7 +88,7 @@ export default function ReviewWidget({ place }) {
         <div className="grid grid-cols-12 py-6 border-b border-gray-200 mb-8">
           <div className="col-span-12 lg:col-span-8">
             <h5 className="font-semibold text-xl leading-8 text-gray-900 text-center">
-              Reviews & Rating
+              Reviews
             </h5>
           </div>
           <div className="col-span-12 lg:col-span-4">
@@ -109,8 +114,20 @@ export default function ReviewWidget({ place }) {
                   <p className="text-gray-600">{review.comment}</p>
                 </div>
                 <div className="flex items-center justify-center ml-auto">
-                  <span className="text-2xl font-semibold text-blue-500">
+                  <span className="text-2xl font-semibold text-blue-500 flex items-center">
                     {review.rating}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="w-6 h-6 ml-1"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                   </span>
                 </div>
               </div>

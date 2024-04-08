@@ -30,7 +30,12 @@ export default function PlacePage() {
   if (!place) return "";
 
   return (
-    <div className="mt-4 bg-gray-100 -mx-8 px-8 pt-8">
+    <div className="mt-4 bg-gray-100 -mx-8 px-8 pt-8" style={{
+      width: "auto",
+      marginLeft: "217px",
+      marginRight: "217px",
+      marginTop: "50px"
+    }}> 
       <h1 className="text-3xl">{place.title}</h1>
       <AddressLink>{place.address}</AddressLink>
       <PlaceGallery place={place} />
@@ -46,9 +51,10 @@ export default function PlacePage() {
               <p key={index}>{perk}</p>
             ))} 
             <div className="my-4">
-          
+          <Link to={`/owner/${place.owner}`}>
           <h2 className="font-semibold text-2xl">Owner:</h2>
               {ownerName}
+          </Link>
         </div>
           </div>
           <h2 className="font-semibold text-2xl">Check in & out:</h2>

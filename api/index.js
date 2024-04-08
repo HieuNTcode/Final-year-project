@@ -13,8 +13,7 @@ const multer = require('multer');
 const fs = require('fs');
 const Booking = require('./models/Booking.js');
 const Review = require('./models/Review.js');
-const { resolve } = require('path');
-const { rejects } = require('assert');
+const nodemailer = require('nodemailer');
 
 const bcryptSalt = bcrypt.genSaltSync(10);
 const jwtSecret = 'ahwehjapowejpwejk';
@@ -264,14 +263,47 @@ app.get('/edit-user', async (req, res) => {
 
 app.delete('/places/:id', async (req, res) => {
   const { id } = req.params;
+
   try {
-    // Delete the place using the provided ID
-    await Place.findByIdAndDelete(id);
-    res.sendStatus(204); // Send a success status code (204 - No Content)
+    const deletedPlace = await Place.findByIdAndDelete(id);
+    const owner = deletedPlace.owner;
+
+    // Send email to the owner
+    const transporter = nodemailer.createTransport({
+      // Configure your email provider here
+      service: 'gmail',
+      auth: {
+        user: 'hieuntgcd201925@fpt.edu.vn',
+        pass: 'qtuu cpxg ltny tiud',
+      },
+    });
+
+    const mailOptions = {
+      from: 'hieuntgcd201925@fpt.edu.vn',
+      to: owner.email,
+      subject: 'Place Deleted',
+      text: `Dear ${owner.name},\n\nYour place with the address ${deletedPlace.address} has been deleted by the admin.\n\nRegards,\nThe Admin`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+      } else {
+        console.log('Email sent:', info.response);
+      }
+    });
+
+    res.json({ message: 'Place deleted successfully' });
   } catch (error) {
-    console.error("Error deleting place:", error);
-    res.status(500).json({ error: "Failed to delete place" });
+    console.error('Error deleting place:', error);
+    res.status(500).json({ error: 'Failed to delete place' });
   }
+});
+
+app.delete('/bookings/place/:placeId', async (req,res) => {
+  const { placeId } = req.params;
+  await Booking.deleteMany({ place: placeId });
+  res.json({ message: 'Bookings associated with the place deleted successfully' });
 });
 
 app.delete('/users/:id', async (req, res) => {
@@ -279,6 +311,9 @@ app.delete('/users/:id', async (req, res) => {
   try {
     // Find the user using the provided ID
     const user = await User.findById(id);
+
+    // Display modal for confirmation
+    // Handle user confirmation (e.g., using frontend)
 
     // Delete the user's places
     await Place.deleteMany({ owner: user._id });
@@ -400,5 +435,66 @@ app.get('/bookingBy/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to retrieve book' });
   }
 });
+
+app.post('/send-email', (req, res) => {
+  const {  sender, recipient, subject, message } = req.body;
+
+  // Configure nodemailer transporter
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: sender,
+      pass: 'qtuu cpxg ltny tiud',
+    },
+  });
+
+  // Setup email data
+  const mailOptions = {
+    from: sender,
+    to: recipient,
+    subject: subject,
+    text: message,
+  };
+
+  // Send email
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error('Error sending email:', error);
+      res.status(500).send('Failed to send email.');
+    } else {
+      console.log('Email sent successfully!');
+      res.status(200).send('Email sent successfully!');
+    }
+  });
+});
+
+app.post('/send-deletion-email', async (req, res) => {
+  const { email } = req.body;
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'hieuntgcd201925@fpt.edu.vn',
+      pass: 'qtuu cpxg ltny tiud',
+    },
+  });
+
+  const mailOptions = {
+    from: 'hieuntgcd201925@fpt.edu.vn',
+    to: email,
+    subject: 'Account Deletion',
+    text: 'Your account has been deleted by the admin.',
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Deletion email sent successfully.');
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Failed to send deletion email:', error);
+    res.sendStatus(500);
+  }
+});
+
 
 app.listen(4000);

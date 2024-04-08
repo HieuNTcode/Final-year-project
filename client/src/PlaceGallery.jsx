@@ -34,7 +34,7 @@ export default function PlaceGallery({place}) {
         <div>
           {place.photos?.[0] && (
             <div>
-              <Image onClick={() => setShowAllPhotos(true)} className="aspect-square cursor-pointer object-cover" src={place.photos[0]} alt=""/>
+              <Image onClick={() => setShowAllPhotos(true)} className="aspect-square cursor-pointer object-cover w-full" src={place.photos[0]} alt=""/>
             </div>
           )}
         </div>

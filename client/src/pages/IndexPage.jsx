@@ -6,6 +6,7 @@ import Image from "../Image.jsx";
 export default function IndexPage() {
   const [places, setPlaces] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [displayCount, setDisplayCount] = useState(24);
 
   useEffect(() => {
     axios.get('/places').then(response => {
@@ -22,18 +23,32 @@ export default function IndexPage() {
 }, []);
 
 
-  const handleDeletePlace = async (placeId) => {
+const handleDeletePlace = async (placeId) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this place?");
+  if (confirmDelete) {
     try {
       await axios.delete(`/places/${placeId}`);
+      await axios.delete(`/bookings/place/${placeId}`);
       setPlaces(prevPlaces => prevPlaces.filter(place => place._id !== placeId));
     } catch (error) {
       console.error("Error deleting place:", error);
     }
+  }
+};
+
+  const handleShowMore = () => {
+    setDisplayCount(prevCount => prevCount + 24);
   };
 
+
   return (
-    <div className="mt-8 grid gap-x-6 gap-y-8 grid-cols-2 md:grid-cols-4 lg:grid-cols-4">
-      {places.length > 0 && places.map(place => (
+    <div className="mt-8 grid gap-x-6 gap-y-8 grid-cols-2 md:grid-cols-6 lg:grid-cols-6" style={{
+      width: "1600px",
+      marginLeft: "150px",
+      marginRight: "217px",
+      marginTop: "100px"
+    }}>
+      {places.slice(0, displayCount).map(place => (
         <div key={place._id}>
           <Link to={`/place/${place._id}`}>
             <div className="bg-gray-500 mb-2 rounded-2xl flex">
@@ -57,6 +72,18 @@ export default function IndexPage() {
           )}
         </div>
       ))}
+
+       {places.length > displayCount && (
+        <button className="text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" onClick={handleShowMore}
+        style={{
+          width: "400px",
+          marginLeft: "577px",
+          marginRight: "217px",
+          marginTop: "50px"
+        }}>
+          Show More
+        </button>
+      )}
     </div>
   );
 }

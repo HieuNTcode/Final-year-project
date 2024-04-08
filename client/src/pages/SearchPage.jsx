@@ -35,13 +35,24 @@ const SearchPage = () => {
 
   return (
     <div>
-      <input
+      <input   
+      style={{
+      width: "1400px",
+      marginLeft: "217px",
+      marginRight: "217px",
+      marginTop: "50px"
+      }}
         type="text"
         value={searchInput}
         onChange={handleSearchInputChange}
         placeholder="Search places..."
       />
-      <div className="mt-8 grid gap-x-6 gap-y-8 grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
+      <div className="mt-8 grid gap-x-6 gap-y-8 grid-cols-2 md:grid-cols-6 lg:grid-cols-6" style={{
+      width: "1600px",
+      marginLeft: "150px",
+      marginRight: "217px",
+      marginTop: "50px"
+      }}>
       {filteredPlaces.length > 0 && filteredPlaces.map(place => (
         <div key={place._id}>
           <Link to={`/place/${place._id}`}>

@@ -76,7 +76,10 @@ export default function ProfilePage() {
     <div>
       <AccountNav />
       {subpage === "profile" && (
-        <div className="p-16">
+        <div className="p-16" style={{
+          marginLeft: "150px",
+          marginRight: "150px",
+        }}>
           <div className="p-8 bg-white shadow mt-24">
             <div className="grid grid-cols-1 md:grid-cols-3">
               <div className="grid grid-cols-3 text-center order-last md:order-first mt-20 md:mt-0">
@@ -108,9 +111,6 @@ export default function ProfilePage() {
                     Edit
                   </button>
                 </Link>
-                <button className="text-white py-2 px-4 uppercase rounded bg-gray-700 hover:bg-gray-800 shadow hover:shadow-lg font-medium transition transform hover:-translate-y-0.5">
-                  Message
-                </button>
               </div>
             </div>
 
@@ -133,9 +133,6 @@ export default function ProfilePage() {
               <p className="text-gray-600 text-center font-light lg:px-16">
                 {user.description}
               </p>
-              <button className="text-indigo-500 py-2 px-4  font-medium mt-4">
-                Show more
-              </button>
               <div className="text-center max-w-lg mx-auto">
                 Logged in as {user.name} ({user.email}) <br />
                 <button onClick={logout}
