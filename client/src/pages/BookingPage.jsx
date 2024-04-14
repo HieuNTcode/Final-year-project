@@ -4,6 +4,7 @@ import axios from "axios";
 import AddressLink from "../AddressLink";
 import PlaceGallery from "../PlaceGallery";
 import BookingDates from "../BookingDates";
+import StripeCheckout from 'react-stripe-checkout';
 
 export default function BookingPage() {
   const {id} = useParams();
@@ -19,6 +20,21 @@ export default function BookingPage() {
     }
   }, [id]);
   
+  const handlePayment = async (token) => {
+    try {
+      const response = await axios.post('/payments', {
+        bookingId: booking._id,
+        token: token.id,
+        amount: booking.price,
+      });
+  
+      // Handle the payment success logic here
+      console.log('Payment response:', response.data);
+    } catch (error) {
+      console.error('Error occurred during payment:', error);
+      // Handle the payment error logic here
+    }
+  };
 
   if (!booking) {
     return '';
@@ -50,6 +66,18 @@ export default function BookingPage() {
           <div className="text-3xl">${booking.price}</div>
         </div>
       </div>
+      <div className="bg-primary p-6 text-white rounded-2xl">
+    <div>Total price</div>
+    <div className="text-3xl">${booking.price}</div>
+    <StripeCheckout
+      stripeKey="pk_test_51P3TzSGHkbez6ATfIR9bmxTpQsxngXBxl7Amev0RhNM5T49Cz6hH2PJasVfVnmMF1CKmQ0mHUYnLfj6u4ThqvzKz00j0su02gs"
+      token={handlePayment}
+      amount={booking.price * 100} // Stripe expects the amount in cents
+      currency="USD"
+    >
+      <button className="my-4 py-2 px-4 bg-green-500 text-white rounded">Pay</button>
+    </StripeCheckout>
+  </div>
       <PlaceGallery place={booking.place} />
     </div>
   );

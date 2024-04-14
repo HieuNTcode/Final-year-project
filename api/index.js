@@ -29,7 +29,40 @@ app.use(cors({
 mongoose.connect(process.env.MONGO_URL);
 // 28hbNxKrylVmHO9l
 
+const stripe = require('stripe')('sk_test_51P3TzSGHkbez6ATfjHpsIu3r5dydHWVFnXHci28EHqGQ9UfprKsfD5aEwLyFBofwHWvKhlkJb22c8znHPgVXbzRp00byrQyfQ4');
+// Handle the payment request
+app.post('/payments', async (req, res) => {
+  const { bookingId, amount, token } = req.body;
 
+
+  try {
+    // Retrieve the booking details from the database based on the bookingId
+    const booking = await Booking.findById(bookingId).populate('place');
+
+    // Create a charge using the Stripe API
+    const charge = await stripe.charges.create({
+      amount: amount * 100, // Stripe expects the amount in cents
+      currency: 'usd',
+      source: token,
+      description: `Payment for booking: ${booking._id}`,
+      // Additional charge parameters
+      statement_descriptor: 'Booking Payment',
+      metadata: {
+        booking_id: booking._id,
+        user_id: booking.user,
+      },
+      receipt_email: 'customer@example.com',
+      // You can include more Stripe charge parameters here if required
+    });
+
+    // Handle the successful payment logic here
+    console.log('Payment successful:', charge);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error occurred during payment:', error);
+    res.status(500).json({ error: 'Payment failed' });
+  }
+});
 function getUserDataFromToken(req) {
   return new Promise((resolve, reject) => {
     jwt.verify(req.cookies.token, jwtSecret, {}, async (err, userData) => {
