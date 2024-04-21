@@ -5,7 +5,7 @@ export default function PlaceImg({place,index=0,className=null}) {
     return '';
   }
   if (!className) {
-    className = 'object-cover w-full';
+    className = 'object-cover w-full h-36';
   }
   return (
     <Image className={className} src={place.photos[index]} alt=""/>

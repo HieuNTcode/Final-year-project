@@ -59,7 +59,7 @@ export default function BookingWidget({ place }) {
       creditNumber,
     });
       // After receiving the booking response from the server
-
+      const bookingId = response.data._id;
     setRedirect(`/account/bookings/${bookingId}`);
   }
 

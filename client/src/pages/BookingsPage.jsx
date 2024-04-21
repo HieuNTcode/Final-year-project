@@ -8,19 +8,25 @@ import BookingDates from "../BookingDates";
 
 export default function BookingsPage() {
   const [bookings,setBookings] = useState([]);
+  const [displayCount, setDisplayCount] = useState(6);
   useEffect(() => {
     axios.get('/bookings').then(response => {
       setBookings(response.data);
     });
   }, []);
+
+  const handleShowMore = () => {
+    setDisplayCount(prevCount => prevCount + 6);
+  };
   return (
     <div>
       <AccountNav />
       <div>
-        {bookings?.length > 0 && bookings.map(booking => (
-          <Link to={`/account/bookings/${booking._id}`} className="flex gap-4 bg-gray-200 rounded-2xl overflow-hidden">
+        {bookings.slice(0, displayCount).map(booking => (
+          <Link to={`/account/bookings/${booking._id}`} className="flex gap-4 mt-8 bg-gray-200 rounded-2xl overflow-hidden">
             <div className="w-48">
-              <PlaceImg place={booking.place} />
+              <PlaceImg place={booking.place} style={{
+                height: "142px" }}/>
             </div>
             <div className="py-3 pr-3 grow">
               <h2 className="text-xl">{booking.place.title}</h2>
@@ -39,6 +45,17 @@ export default function BookingsPage() {
           </Link>
         ))}
       </div>
+      {bookings.length > displayCount && (
+        <button className="text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" onClick={handleShowMore}
+        style={{
+          width: "400px",
+          marginLeft: "707px",
+          marginRight: "217px",
+          marginTop: "50px"
+        }}>
+          Show More
+        </button>
+      )}
     </div>
   );
 }

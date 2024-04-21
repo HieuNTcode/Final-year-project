@@ -88,8 +88,6 @@ app.post('/register', async (req,res) => {
     }catch (e){
         res.status(422).json(e);
     }
-   
-    
 });
 
 app.post('/login', async (req, res) => {
