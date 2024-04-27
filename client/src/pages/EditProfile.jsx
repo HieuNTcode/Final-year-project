@@ -63,7 +63,11 @@ export default function EditProfile () {
   }
 
   return (
-    <div>
+    <div style={{
+      marginTop: "100px",
+      marginLeft: "150px",
+      marginRight: "150px",
+    }}>
       <h2 className='pl-6 text-2xl font-bold sm:text-xl'>Edit Profile</h2>
       <form onSubmit={handleFormSubmit}>
         <div>
@@ -94,7 +98,12 @@ export default function EditProfile () {
           <label>lived:</label>
           <input type="text" value={lived} onChange={(e) => setLived(e.target.value)} />
         </div>
-        <button type="submit">Update Profile</button>
+        <button type="submit" className="text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" style={{
+          width: "400px",
+          marginLeft: "577px",
+          marginRight: "217px",
+          marginTop: "50px"
+        }}>Update Profile</button>
       </form>
     </div>
   );

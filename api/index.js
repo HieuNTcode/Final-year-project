@@ -63,6 +63,7 @@ app.post('/payments', async (req, res) => {
     res.status(500).json({ error: 'Payment failed' });
   }
 });
+
 function getUserDataFromToken(req) {
   return new Promise((resolve, reject) => {
     jwt.verify(req.cookies.token, jwtSecret, {}, async (err, userData) => {
@@ -245,9 +246,13 @@ app.get('/places', async (req, res) => {
 
 app.post('/bookings', async (req,res) => {
   const userData = await getUserDataFromToken(req);
-  const {place,checkIn,checkOut,numberOfGuests,name,phone,price,paymentname,creditNumber} = req.body;
+  const {place,checkIn,checkOut,
+    numberOfGuests,name,phone,
+    price,paymentname,creditNumber} = req.body;
   Booking.create({
-    place,checkIn,checkOut,numberOfGuests,name,phone,price,user:userData.id,paymentname,creditNumber
+    place,checkIn,checkOut,
+    numberOfGuests,name,phone,
+    price,user:userData.id,paymentname,creditNumber
   }).then((doc) => {
     res.json(doc);
   }).catch((err) => {
@@ -292,41 +297,52 @@ app.get('/edit-user', async (req, res) => {
   res.json(user);
 });
 
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'hieuntgcd201925@fpt.edu.vn',
+    pass: 'qtuu cpxg ltny tiud',
+  },
+});
+
 app.delete('/places/:id', async (req, res) => {
-  const { id } = req.params;
-
+  const placeId = req.params.id;
   try {
-    const deletedPlace = await Place.findByIdAndDelete(id);
-    const owner = deletedPlace.owner;
+    // Find the place to be deleted
+    const place = await Place.findById(placeId);
 
-    // Send email to the owner
-    const transporter = nodemailer.createTransport({
-      // Configure your email provider here
-      service: 'gmail',
-      auth: {
-        user: 'hieuntgcd201925@fpt.edu.vn',
-        pass: 'qtuu cpxg ltny tiud',
-      },
-    });
+    // Check if the place exists and the user is the owner
+    if (!place) {
+      return res.status(404).json({ error: 'Place not found' });
+    }
 
+    // Store the owner's ID before deleting the place
+    const ownerId = place.owner;
+
+    // Delete the place
+    await Place.findByIdAndDelete(placeId);
+
+    // Find the user associated with the deleted place
+    const user = await User.findById(ownerId);
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Send an email to the user
     const mailOptions = {
       from: 'hieuntgcd201925@fpt.edu.vn',
-      to: owner.email,
-      subject: 'Place Deleted',
-      text: `Dear ${owner.name},\n\nYour place with the address ${deletedPlace.address} has been deleted by the admin.\n\nRegards,\nThe Admin`,
+      to: user.email,
+      subject: 'Your Place has been Deleted',
+      text: 'Dear User, your place has been deleted by the admin.',
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('Error sending email:', error);
-      } else {
-        console.log('Email sent:', info.response);
-      }
-    });
+    await transporter.sendMail(mailOptions);
 
     res.json({ message: 'Place deleted successfully' });
   } catch (error) {
-    console.error('Error deleting place:', error);
+    console.error(error);
     res.status(500).json({ error: 'Failed to delete place' });
   }
 });
@@ -342,10 +358,6 @@ app.delete('/users/:id', async (req, res) => {
   try {
     // Find the user using the provided ID
     const user = await User.findById(id);
-
-    // Display modal for confirmation
-    // Handle user confirmation (e.g., using frontend)
-
     // Delete the user's places
     await Place.deleteMany({ owner: user._id });
 
